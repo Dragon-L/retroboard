@@ -15,6 +15,9 @@
 *.iws
 *.iml
 *.ipr
+.ideaDataSources
+dataSources
+
 
 ### NetBeans ###
 nbproject/private/
