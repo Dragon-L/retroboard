@@ -1,23 +1,27 @@
 buildscript {
-	ext {
-		springBootVersion = '1.4.2.RELEASE'
-	}
 	repositories {
 		mavenCentral()
+		maven {
+			url "https://plugins.gradle.org/m2/"
+		}
 	}
 	dependencies {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+		classpath("gradle.plugin.com.boxfuse.client:flyway-release:${flywayVersion}")
+		classpath("org.postgresql:postgresql:${postgresVersion}")
 	}
 }
 
-apply plugin: 'java'
-apply plugin: 'idea'
-apply plugin: 'org.springframework.boot'
+apply plugin: "java"
+apply plugin: "idea"
+apply plugin: "org.springframework.boot"
+apply plugin: "org.flywaydb.flyway"
 
 jar {
-	baseName = 'retroboard'
-	version = '0.0.1-SNAPSHOT'
+	baseName = "retroboard"
+	version = "0.0.1-SNAPSHOT"
 }
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
@@ -25,13 +29,29 @@ repositories {
 	mavenCentral()
 }
 
-
 dependencies {
-	compile('org.springframework.boot:spring-boot-starter-aop')
-	compile('org.flywaydb:flyway-core')
-	compile('org.springframework.boot:spring-boot-starter-jersey')
-	compile('org.springframework.boot:spring-boot-starter-validation')
-	runtime('org.postgresql:postgresql')
-	compileOnly('org.projectlombok:lombok')
-	testCompile('org.springframework.boot:spring-boot-starter-test')
+	compile("org.springframework.boot:spring-boot-starter-aop")
+	compile("org.springframework.boot:spring-boot-starter-jersey")
+	compile("org.springframework.boot:spring-boot-starter-validation")
+	compile("org.springframework.boot:spring-boot-starter-jooq")
+	compile("org.flywaydb:flyway-core:${flywayVersion}")
+	compile("com.zaxxer:HikariCP:${hikariVersion}")
+	runtime("org.postgresql:postgresql:${postgresVersion}")
+	compileOnly("org.projectlombok:lombok")
+	testCompile("org.springframework.boot:spring-boot-starter-test")
+	testCompile("org.springframework.boot:spring-boot-starter-test")
+}
+
+flyway {
+	driver = "org.postgresql.Driver"
+	url = "jdbc:postgresql://localhost:5432/retroboard"
+	user = "retroboard_admin"
+	password = "postgres"
+	locations = [ "filesystem:${project.projectDir}/src/main/resources/db/migration" ]
+}
+
+idea {
+	project {
+		vcs = 'Git'
+	}
 }
