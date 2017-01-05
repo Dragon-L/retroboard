@@ -9,6 +9,7 @@ buildscript {
 		classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
 		classpath("gradle.plugin.com.boxfuse.client:flyway-release:${flywayVersion}")
 		classpath("org.postgresql:postgresql:${postgresVersion}")
+		classpath("org.jooq:jooq-codegen:${jooqVersion}")
 	}
 }
 
@@ -33,7 +34,8 @@ dependencies {
 	compile("org.springframework.boot:spring-boot-starter-aop")
 	compile("org.springframework.boot:spring-boot-starter-jersey")
 	compile("org.springframework.boot:spring-boot-starter-validation")
-	compile("org.springframework.boot:spring-boot-starter-jooq")
+	compile("org.springframework:spring-jdbc:${springVersion}")
+	compile("org.jooq:jooq:${jooqVersion}")
 	compile("org.flywaydb:flyway-core:${flywayVersion}")
 	compile("com.zaxxer:HikariCP:${hikariVersion}")
 	runtime("org.postgresql:postgresql:${postgresVersion}")
@@ -43,15 +45,45 @@ dependencies {
 }
 
 flyway {
-	driver = "org.postgresql.Driver"
-	url = "jdbc:postgresql://localhost:5432/retroboard"
-	user = "retroboard_admin"
-	password = "postgres"
+	driver = "${driver}"
+	url = "${url}"
+	user = "${user}"
+	password = "${password}"
 	locations = [ "filesystem:${project.projectDir}/src/main/resources/db/migration" ]
 }
 
 idea {
 	project {
-		vcs = 'Git'
+		vcs = "Git"
 	}
 }
+
+def writer = new StringWriter()
+def xml = new groovy.xml.MarkupBuilder(writer)
+		.configuration('xmlns': 'http://www.jooq.org/xsd/jooq-codegen-3.9.0.xsd') {
+	jdbc() {
+		driver("${driver}")
+		url("${url}")
+		user("${user}")
+		password("${password}")
+	}
+	generator() {
+		database() {
+			excludes("schema_version")
+			inputSchema("public")
+		}
+
+		generate([:]) {
+			pojos false
+			daos false
+		}
+		target() {
+			packageName('com.tw.retroboard.jooq.codegen')
+			directory('src/main/java')
+		}
+	}
+}
+
+org.jooq.util.GenerationTool.generate(
+		javax.xml.bind.JAXB.unmarshal(new StringReader(writer.toString()), org.jooq.util.jaxb.Configuration.class)
+)

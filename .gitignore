@@ -27,3 +27,4 @@ dist/
 nbdist/
 .nb-gradle/
 out/
+src/main/java/com/tw/retroboard/jooq/
